@@ -6,7 +6,7 @@ object Player {
   def random = if ((new Random).nextBoolean()) RedPlayer else BluePlayer
 }
 
-sealed trait Player {
+trait Player {
   def other: Player
 }
 
