@@ -14,19 +14,20 @@ object Board {
 }
 
 /**
- * A 2D vector that contains an option of a player object.
- * 
- * If it is Some(Player) it means that the player has set his mark there.
+ * Represents the 3x3 board of a tic tac toe game.
+ *
+ * If a slot is Some(Player) it means that this player has set its mark there.
  * None means the slot is empty.
- * 
- * @param slots A 2D vector representing the state of the board 
+ *
+ * @param slots A 2D vector representing the board 
  */
 case class Board(slots: Vector[Vector[Option[Player]]] = Vector.fill(3, 3)(None)) {
 
   import Board._
 
   /**
-   * Lets a player put his mark at a position
+   * Lets a player put his mark at a position.
+   * 
    * @param pos the position where the mark should be set
    * @param player the player that wants to set the mark
    * @return a Success of a new Board if the move is allowed, Failure otherwise
@@ -55,11 +56,12 @@ case class Board(slots: Vector[Vector[Option[Player]]] = Vector.fill(3, 3)(None)
    * @return Some player if the game is over, None otherwise
    */
   def winner: Option[Player] = {
-
+    
     /**
      * Checks if all fields are of the same player in a sequence.
-     * @param seq A sequence of fields that are either empty or contains the mark of some player
-     * @return Some(Player) if the sequence 
+     * 
+     * @param seq A sequence of fields that are either empty or contain the mark of some player
+     * @return some player if all fields in the sequence contain this player
      */
     def check(seq: Seq[Option[Player]]) = {
       val candidate = seq.head
@@ -97,7 +99,8 @@ case class Board(slots: Vector[Vector[Option[Player]]] = Vector.fill(3, 3)(None)
 }
 
 /**
- * A move in the tic tac toe game
+ * A move in the tic tac toe game.
+ * 
  * @param player The player who wants to make the move
  * @param pos The position where the player wants to make his mark
  */
@@ -110,10 +113,10 @@ object TicTacToeState {
 }
 
 case class TicTacToeState(board: Board = Board(),
-                         history: List[TicTacToeState] = Nil,
-                         activePlayer: Player = Player.random)
-   extends State[TicTacToeMove] {
-  
+                          history: List[TicTacToeState] = Nil,
+                          activePlayer: Player = Player.random)
+    extends State[TicTacToeMove] {
+
   override def winner = board.winner
 
   override def move(move: TicTacToeMove): Try[State[TicTacToeMove]] = {
@@ -128,6 +131,7 @@ case class TicTacToeState(board: Board = Board(),
 
 class TicTacToeGame {
   var state: State[TicTacToeMove] = TicTacToeState()
+
   def move(move: TicTacToeMove) = {
     val nextState = state.move(move)
     if (nextState.isSuccess) state = nextState.get

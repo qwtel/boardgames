@@ -15,7 +15,7 @@ trait State[M <: Move] {
   def activePlayer: Player
 
   /**
-   * @param move M move by a player
+   * @param move A move by a player
    * @return A success of a new game if the move is valid, or failure otherwise
    */
   def move(move: M): Try[State[M]]
