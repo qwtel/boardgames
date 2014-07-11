@@ -81,8 +81,11 @@ case class TicTacToeGame(board: Board = Board(),
   override def winner = board.winner
 
   override def move(move: TicTacToeMove): Try[Game[TicTacToeMove]] = {
-    board.put(move.pos, move.player) map {
-      board => TicTacToeGame(board, this :: history, activePlayer.other)
+    if (move.player != activePlayer) Failure(new IllegalArgumentException("Not your turn"))
+    else {
+      board.put(move.pos, move.player) map {
+        board => TicTacToeGame(board, this :: history, activePlayer.other)
+      }
     }
   }
 }
