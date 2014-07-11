@@ -11,6 +11,15 @@ object TicTacToeGameTest {
   implicit def tuple2Move(t: (Player, Pos)): TicTacToeMove = {
     TicTacToeMove(t._1, t._2)
   }
+  
+  def wonGame = {
+    Try(TicTacToeGame(activePlayer = RedPlayer))
+        .flatMap(_.move((RedPlayer, Pos(0, 0))))
+        .flatMap(_.move((BluePlayer, Pos(2, 2))))
+        .flatMap(_.move((RedPlayer, Pos(0, 1))))
+        .flatMap(_.move((BluePlayer, Pos(1, 1))))
+        .flatMap(_.move((RedPlayer, Pos(0, 2))))
+  }
 }
 
 class TicTacToeGameTest extends FlatSpec with Matchers {
@@ -55,29 +64,12 @@ class TicTacToeGameTest extends FlatSpec with Matchers {
   }
 
   it should "forbid to place moves on existing moves" in {
-    val game =
-      Try(TicTacToeGame(activePlayer = RedPlayer)) flatMap {
-        _.move((RedPlayer, Pos(1, 1)))
-      } flatMap {
-        _.move((BluePlayer, Pos(1, 1)))
-      }
+    val game = Try(TicTacToeGame(activePlayer = RedPlayer))
+        .flatMap(_.move((RedPlayer, Pos(1, 1))))
+        .flatMap(_.move((BluePlayer, Pos(1, 1))))
 
     game.isFailure should be(true)
     intercept[IllegalArgumentException](game.get)
-  }
-
-  def wonGame = {
-    Try(TicTacToeGame(activePlayer = RedPlayer)) flatMap {
-      _.move((RedPlayer, Pos(0, 0)))
-    } flatMap {
-      _.move((BluePlayer, Pos(2, 2)))
-    } flatMap {
-      _.move((RedPlayer, Pos(0, 1)))
-    } flatMap {
-      _.move((BluePlayer, Pos(1, 1)))
-    } flatMap {
-      _.move((RedPlayer, Pos(0, 2)))
-    }
   }
 
   it should "determine a winner" in {
@@ -88,27 +80,31 @@ class TicTacToeGameTest extends FlatSpec with Matchers {
   }
 
   it should "not allow moves after a winner has been determined" in {
-    val game = wonGame flatMap {
-      _.move((BluePlayer, Pos(2, 1)))
-    }
+    val game = wonGame
+        .flatMap(_.move((BluePlayer, Pos(2, 1))))
 
     game.isFailure should be(true)
     intercept[IllegalStateException](game.get)
   }
 
   it should "keep the history" in {
-    val game0 = Try(TicTacToeGame())
+    val game0 = Try(TicTacToeGame(activePlayer = RedPlayer))
 
-    val game1 = game0 flatMap {
-      _.move((RedPlayer, Pos(0, 1)))
-    }
-
-    val game2 = game1 flatMap {
-      _.move((BluePlayer, Pos(1, 1)))
-    }
+    val game1 = game0.flatMap(_.move((RedPlayer, Pos(0, 1))))
+    val game2 = game1.flatMap(_.move((BluePlayer, Pos(1, 1))))
 
     game2.get.history.head should equal(game1.get)
     game1.get.history.head should equal(game0.get)
+  }
+
+  it should "not allow a player to go twice" in {
+    val game0 = Try(TicTacToeGame(activePlayer = RedPlayer))
+    val game = game0
+        .flatMap(_.move((RedPlayer, Pos(0, 0))))
+        .flatMap(_.move((RedPlayer, Pos(1, 1))))
+
+    game.isFailure should be(true)
+    intercept[IllegalArgumentException](game.get)
   }
 
 }
