@@ -4,7 +4,7 @@ import scala.util.Try
 
 /**
  * Represents the state of a game.
- * 
+ *
  * @tparam M The type of move that is allowed in this game
  */
 trait State[M <: Move] {
@@ -12,7 +12,7 @@ trait State[M <: Move] {
   /**
    * @return The player who's turn it is
    */
-  def activePlayer: Player
+  def currPlayer: Player
 
   /**
    * @param move A move by a player

@@ -3,7 +3,6 @@ package game.tictactoe
 import game._
 
 import game.Pos
-import game.tictactoe.Board
 import java.lang.IndexOutOfBoundsException
 import org.scalatest.{Matchers, FlatSpec}
 import scala.Some
@@ -14,7 +13,7 @@ object TicTacToeStateTest {
   import TicTacToeState._
 
   lazy val WonGame = {
-    Try(TicTacToeState(activePlayer = RedPlayer))
+    Try(TicTacToeState(currPlayer = RedPlayer))
         .flatMap(_.move((RedPlayer, Pos(0, 0))))
         .flatMap(_.move((BluePlayer, Pos(2, 2))))
         .flatMap(_.move((RedPlayer, Pos(0, 1))))
@@ -34,12 +33,12 @@ class TicTacToeStateTest extends FlatSpec with Matchers {
   }
 
   "A tic tac toe game" should "exit" in {
-    val game = TicTacToeState(activePlayer = RedPlayer)
+    val game = TicTacToeState(currPlayer = RedPlayer)
     game should not equal null
   }
 
   it should "allow to make a move" in {
-    val game = TicTacToeState(activePlayer = RedPlayer)
+    val game = TicTacToeState(currPlayer = RedPlayer)
     val game1 = game.move((RedPlayer, Pos(1, 1)))
 
     game1.isSuccess should be(true)
@@ -47,12 +46,10 @@ class TicTacToeStateTest extends FlatSpec with Matchers {
     game1.get match {
       case TicTacToeState(board, _, _) =>
         board should equal {
-          Board(
-            Vector(
-              Vector(None, None, None),
-              Vector(None, Some(RedPlayer), None),
-              Vector(None, None, None)
-            )
+          Vector(
+            Vector(None, None, None),
+            Vector(None, Some(RedPlayer), None),
+            Vector(None, None, None)
           )
         }
     }
@@ -60,13 +57,13 @@ class TicTacToeStateTest extends FlatSpec with Matchers {
   }
 
   it should "forbid to place moves outside the grid" in {
-    val game = TicTacToeState(activePlayer = RedPlayer).move((RedPlayer, Pos(-1, 0)))
+    val game = TicTacToeState(currPlayer = RedPlayer).move((RedPlayer, Pos(-1, 0)))
     game.isFailure should be(true)
     intercept[IndexOutOfBoundsException](game.get)
   }
 
   it should "forbid to place moves on existing moves" in {
-    val game = Try(TicTacToeState(activePlayer = RedPlayer))
+    val game = Try(TicTacToeState(currPlayer = RedPlayer))
         .flatMap(_.move((RedPlayer, Pos(1, 1))))
         .flatMap(_.move((BluePlayer, Pos(1, 1))))
 
@@ -90,7 +87,7 @@ class TicTacToeStateTest extends FlatSpec with Matchers {
   }
 
   it should "keep the history" in {
-    val game0 = Try(TicTacToeState(activePlayer = RedPlayer))
+    val game0 = Try(TicTacToeState(currPlayer = RedPlayer))
 
     val game1 = game0.flatMap(_.move((RedPlayer, Pos(0, 1))))
     val game2 = game1.flatMap(_.move((BluePlayer, Pos(1, 1))))
@@ -100,7 +97,7 @@ class TicTacToeStateTest extends FlatSpec with Matchers {
   }
 
   it should "not allow a player to go twice" in {
-    val game0 = Try(TicTacToeState(activePlayer = RedPlayer))
+    val game0 = Try(TicTacToeState(currPlayer = RedPlayer))
     val game = game0
         .flatMap(_.move((RedPlayer, Pos(0, 0))))
         .flatMap(_.move((RedPlayer, Pos(1, 1))))
