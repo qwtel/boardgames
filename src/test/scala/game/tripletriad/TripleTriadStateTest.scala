@@ -12,19 +12,19 @@ class TripleTriadStateTest extends FlatSpec with Matchers {
   }
 
   "A triple triad game" should "exists" in {
-    val game = TripleTriadState(activePlayer = RedPlayer)
+    val game = TripleTriadState(currPlayer = RedPlayer)
     game should not equal null
   }
 
   it should "allow to make a move" in {
-    val game = TripleTriadState(activePlayer = RedPlayer)
+    val game = TripleTriadState(currPlayer = RedPlayer)
         .move((RedPlayer, Card(1, 1, 1, 1), Pos(0, 0)))
 
     game.isSuccess should be(true)
   }
 
   it should "flip cards" in {
-    val game = TripleTriadState(activePlayer = RedPlayer)
+    val game = TripleTriadState(currPlayer = RedPlayer)
         .move((RedPlayer, Card(1, 1, 1, 1), Pos(0, 0)))
         .flatMap(_.move((BluePlayer, Card(2, 2, 2, 2), Pos(0, 1))))
     
