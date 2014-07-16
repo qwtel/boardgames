@@ -7,10 +7,13 @@ import scala.util.Failure
 import scala.Some
 
 object Board {
-  val Num = 3
-  val Size = Pos(Num, Num)
-  val ColRange = 0 until Size.x
-  val RowRange = 0 until Size.y
+  val N = 3
+  val Size = Pos(N, N)
+
+  /**
+   * Number required to win
+   */
+  val WinNum = 3
 }
 
 /**
@@ -27,7 +30,7 @@ case class Board(slots: Vector[Vector[Option[Player]]] = Vector.fill(3, 3)(None)
 
   /**
    * Lets a player put his mark at a position.
-   * 
+   *
    * @param pos the position where the mark should be set
    * @param player the player that wants to set the mark
    * @return a Success of a new Board if the move is allowed, Failure otherwise
@@ -36,18 +39,18 @@ case class Board(slots: Vector[Vector[Option[Player]]] = Vector.fill(3, 3)(None)
     if (!(pos within Size)) {
       Failure(new IndexOutOfBoundsException(pos.toString))
     }
-    else if (!slots(pos.x)(pos.y).isEmpty) {
+    else if (slots(pos.x)(pos.y).isDefined) {
       Failure(new IllegalArgumentException("Field not empty"))
     }
     else if (winner.isDefined) {
       Failure(new IllegalStateException("Game already ended"))
     }
     else {
-      Success {
-        Board {
+      Success(
+        Board(
           slots.updated(pos.x, slots(pos.x).updated(pos.y, Some(player)))
-        }
-      }
+        )
+      )
     }
   }
 
@@ -56,51 +59,69 @@ case class Board(slots: Vector[Vector[Option[Player]]] = Vector.fill(3, 3)(None)
    * @return Some player if the game is over, None otherwise
    */
   def winner: Option[Player] = {
+
+    /**
+     * Extract a column
+     * @param x the number of the column, 0 until N
+     */
+    def |(x: Int): Seq[Option[Player]] = {
+      slots(x)
+    }
+
+    /**
+     * Extract a row
+     * @param y the number of the row, 0 until N
+     */
+    def --(y: Int): Seq[Option[Player]] = {
+      for (x <- 0 until Size.x) yield slots(x)(y)
+    }
+
+    /**
+     * Extract a / diagonal in this direction
+     * @param p The number of the diagonal, 0 until 2 * N - 1
+     */
+    def /(p: Int): Seq[Option[Player]] = {
+      for (q <- (0 max p - N + 1) to (p min N - 1)) yield slots(q)(p - q)
+    }
+
+    /**
+     * Extract a \ diagonal in this direction: \
+     * @param p The number of the diagonal, 0 until 2 * N - 1
+     */
+    def \(p: Int): Seq[Option[Player]] = {
+      for (q <- (0 max p - N + 1) to (p min N - 1)) yield slots(N - 1 - q)(p - q)
+    }
     
     /**
      * Checks if all fields are of the same player in a sequence.
-     * 
-     * @param seq A sequence of fields that are either empty or contain the mark of some player
-     * @return some player if all fields in the sequence contain this player
+     *
+     * @param func A function that generates a row, col or diagonal of the board
+     * @param i The number of the row, col or diagonal
+     * @return some player if all fields in the row, col or diagonal contain this player
      */
-    def check(seq: Seq[Option[Player]]) = {
+    def check(func: (Int) => Seq[Option[Player]])(i: Int) = {
+      val seq = func(i)
       val candidate = seq.head
-      if (seq.count(_ == candidate) == Num) candidate
+      if (seq.count(_ == candidate) == WinNum) candidate
       else None
     }
 
-    def checkCol(x: Int) = {
-      val col = slots(x)
-      check(col)
-    }
-
-    def checkRow(y: Int) = {
-      // TODO: Allow arbitrary sizes
-      val row = Seq(slots(0)(y), slots(1)(y), slots(2)(y))
-      check(row)
-    }
-
-    // TODO: Allow arbitrary sizes
-    def checkDiagonal = {
-      val d1 = Seq(slots(0)(0), slots(1)(1), slots(2)(2))
-      val d2 = Seq(slots(0)(2), slots(1)(1), slots(0)(2))
-      or(check(d1), check(d2))
-    }
-
-    // TODO: Isn't there a better way?
-    def or(a: Option[Player], b: Option[Player]) = {
-      if (a.isDefined) a else if (b.isDefined) b else None
-    }
-
     // creates a sequence of options, then checks if at least one of them is defined
-    // the way the game works there is at most one options that is defined
-    (ColRange.map(checkCol) ++ RowRange.map(checkRow) :+ checkDiagonal).fold(None)(or)
+    // the way the game works there is at most one option that is not empty
+    val checkedCols = (0 until Size.x) map check(|)
+    val checkedRows = (0 until Size.y) map check(--)
+    val checkedDiagonalsAsc = (0 until 2 * N - 1) map check(/)
+    val checkedDiagonalsDesc = (0 until 2 * N - 1) map check(\)
+
+    (checkedCols ++ checkedRows ++ checkedDiagonalsAsc ++ checkedDiagonalsDesc).fold(None) {
+      (acc, elem) => if (acc.isDefined) acc else elem
+    }
   }
 }
 
 /**
  * A move in the tic tac toe game.
- * 
+ *
  * @param player The player who wants to make the move
  * @param pos The position where the player wants to make his mark
  */

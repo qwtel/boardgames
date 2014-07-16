@@ -1,7 +1,9 @@
+package game.tictactoe
+
 import game._
 
 import game.Pos
-import game.tictactoe.{Board, TicTacToeState}
+import game.tictactoe.Board
 import java.lang.IndexOutOfBoundsException
 import org.scalatest.{Matchers, FlatSpec}
 import scala.Some
@@ -10,8 +12,6 @@ import scala.util.Try
 object TicTacToeStateTest {
 
   import TicTacToeState._
-
-  // implicit conversation
 
   lazy val WonGame = {
     Try(TicTacToeState(activePlayer = RedPlayer))
@@ -27,11 +27,7 @@ class TicTacToeStateTest extends FlatSpec with Matchers {
 
   import TicTacToeState._
 
-  // implicit conversation
-
   import TicTacToeStateTest._
-
-  // constants
 
   "The universe" should "exist" in {
     true should be(true)
@@ -42,10 +38,9 @@ class TicTacToeStateTest extends FlatSpec with Matchers {
     game should not equal null
   }
 
-  it should "be allow to make a move" in {
+  it should "allow to make a move" in {
     val game = TicTacToeState(activePlayer = RedPlayer)
     val game1 = game.move((RedPlayer, Pos(1, 1)))
-
 
     game1.isSuccess should be(true)
 

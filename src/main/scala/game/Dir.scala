@@ -1,39 +1,33 @@
 package game
 
-sealed trait Dir {
-  def opposite: Dir
+object Dir extends Enumeration {
+  type Dir = Value
+  val North, East, South, West = Value
+
+  case class DirValue(opposite: Dir)
+
+  implicit def value2DirValue(dir: Dir) = dir match {
+    case North => DirValue(South)
+    case East => DirValue(West)
+    case South => DirValue(North)
+    case West => DirValue(East)
+  }
 }
 
-case object North extends Dir {
-  def opposite = South
+object Dir8 extends Enumeration {
+  type Dir8 = Value
+  val North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest = Value
+
+  case class DirValue(opposite: Dir8)
+
+  implicit def value2DirValue(dir: Dir8) = dir match {
+    case North => DirValue(South)
+    case NorthEast => DirValue(SouthWest)
+    case East => DirValue(West)
+    case SouthEast => DirValue(NorthWest)
+    case South => DirValue(North)
+    case SouthWest => DirValue(NorthEast)
+    case West => DirValue(East)
+    case NorthWest => DirValue(SouthEast)
+  }
 }
-
-case object NorthEast extends Dir {
-  def opposite = SouthWest
-}
-
-case object East extends Dir {
-  def opposite = West
-}
-
-case object SouthEast extends Dir {
-  def opposite = NorthWest
-}
-
-case object South extends Dir {
-  def opposite = North
-}
-
-case object SouthWest extends Dir {
-  def opposite = NorthEast
-}
-
-case object West extends Dir {
-  def opposite = East
-}
-
-case object NorthWest extends Dir {
-  def opposite = SouthEast
-}
-
-

@@ -3,7 +3,7 @@ package game
 import scala.util.Random
 
 object Player {
-  def random = if ((new Random).nextBoolean()) RedPlayer else BluePlayer
+  def random: Player = if ((new Random).nextBoolean()) RedPlayer else BluePlayer
 }
 
 trait Player {
